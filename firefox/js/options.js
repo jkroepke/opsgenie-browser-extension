@@ -1,5 +1,4 @@
 document.querySelector('title').textContent = chrome.i18n.getMessage('optionsTitle');
-document.querySelector('h1 > span').textContent = chrome.i18n.getMessage('optionsTitle');
 document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessage('optionsEnabled');
 document.querySelector('label[for=region]').textContent = chrome.i18n.getMessage('optionsRegion');
 document.querySelector('label[for=customer-name]').textContent = chrome.i18n.getMessage('optionsCustomerName');

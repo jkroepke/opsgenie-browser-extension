@@ -2,7 +2,7 @@
   "name": "__MSG_extName__",
   "short_name": "Opsgenie Notifier",
   "description": "__MSG_extDescription__",
-  "version": "2.0.1",
+  "version": "2.0.2",
   "manifest_version": 3,
   "default_locale": "en",
   "icons": {
@@ -29,7 +29,10 @@
   "content_security_policy": {
     "extension_pages": "default-src 'none'; style-src 'self'; connect-src https://*.opsgenie.com; script-src 'self';"
   },
-  "options_page": "options.html",
+  "options_ui": {
+    "open_in_tab": false,
+    "page": "options.html"
+  },
   "host_permissions": [
     "https://*.opsgenie.com/"
   ],
