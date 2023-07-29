@@ -1,85 +1,88 @@
 {
-  "extName": {
-    "message": "Opsgenie Notifier"
-  },
-  "extDescription": {
-    "message": "An extension for showing latest alerts and getting notifications for new alert(s) via polling Opsgenie’s REST API."
-  },
-  "popupExtensionDisabled": {
-    "message": "Extension is disabled, for enabling it use switch in $LINKSTART$option page$LINKEND$.",
-    "placeholders": {
-      "linkstart": {
-        "content": "$1"
-      },
-      "linkend": {
-        "content": "$2"
-      }
+    "extName": {
+        "message": "Opsgenie Notifier"
+    },
+    "extDescription": {
+        "message": "An extension for showing latest alerts and getting notifications for new alert(s) via polling Opsgenie’s REST API."
+    },
+    "popupExtensionDisabled": {
+        "message": "Extension is disabled, for enabling it use switch in $LINKSTART$option page$LINKEND$.",
+        "placeholders": {
+            "linkstart": {
+                "content": "$1"
+            },
+            "linkend": {
+                "content": "$2"
+            }
+        }
+    },
+    "popupApiKeyEmpty": {
+        "message": "Extension is not configured, please configure your extension in $LINKSTART$option page$LINKEND$.",
+        "placeholders": {
+            "linkstart": {
+                "content": "$1"
+            },
+            "linkend": {
+                "content": "$2"
+            }
+        }
+    },
+    "popupClientFailure": {
+        "message": "Client failure, will retry $TIMEINTERVAL$ minutes.<br> Reason: $ERROR$",
+        "placeholders": {
+            "timeinterval": {
+                "content": "$1"
+            },
+            "error": {
+                "content": "$2"
+            }
+        }
+    },
+    "popupNetworkFailure": {
+        "message": "Network failure, will retry in $TIMEINTERVAL$ minutes.<br> Reason: $ERROR$",
+        "placeholders": {
+            "timeinterval": {
+                "content": "$1"
+            },
+            "error": {
+                "content": "$2"
+            }
+        }
+    },
+    "optionsTitle": {
+        "message": "Opsgenie Notifier - Options"
+    },
+    "optionsEnabled": {
+        "message": "Enable Extension"
+    },
+    "optionsRegion": {
+        "message": "Region"
+    },
+    "optionsCustomerName": {
+        "message": "Customer"
+    },
+    "optionsUsername": {
+        "message": "Username for Alert actions"
+    },
+    "optionsApiKey": {
+        "message": "API Key"
+    },
+    "optionsApiKeyHelp": {
+        "message": "(Help)"
+    },
+    "optionsAlertQuery": {
+        "message": "Alert Query"
+    },
+    "optionsTimeInterval": {
+        "message": "Time Interval (minutes)"
+    },
+    "optionPopupHeight": {
+        "message": "Popup Height (px)"
+    },
+    "optionsButtonSave": {
+        "message": "Speichern"
+    },
+    "optionsSaved": {
+        "message": "Saved successfully, badge will be refreshed now!"
     }
-  },
-  "popupApiKeyEmpty": {
-    "message": "Extension is not configured, please configure your extension in $LINKSTART$option page$LINKEND$.",
-    "placeholders": {
-      "linkstart": {
-        "content": "$1"
-      },
-      "linkend": {
-        "content": "$2"
-      }
-    }
-  },
-  "popupClientFailure": {
-    "message": "Client failure, will retry $TIMEINTERVAL$ minutes.<br> Reason: $ERROR$",
-    "placeholders": {
-      "timeinterval": {
-        "content": "$1"
-      },
-      "error": {
-        "content": "$2"
-      }
-    }
-  },
-  "popupNetworkFailure": {
-    "message": "Network failure, will retry in $TIMEINTERVAL$ minutes.<br> Reason: $ERROR$",
-    "placeholders": {
-      "timeinterval": {
-        "content": "$1"
-      },
-      "error": {
-        "content": "$2"
-      }
-    }
-  },
-  "optionsTitle": {
-    "message": "Opsgenie Notifier - Options"
-  },
-  "optionsEnabled": {
-    "message": "Enable Extension"
-  },
-  "optionsRegion": {
-    "message": "Region"
-  },
-  "optionsCustomerName": {
-    "message": "Customer"
-  },
-  "optionsUsername": {
-    "message": "Username for Alert actions"
-  },
-  "optionsApiKey": {
-    "message": "API Key $1(Help)$2"
-  },
-  "optionsAlertQuery": {
-    "message": "Alert Query"
-  },
-  "optionsTimeInterval": {
-    "message": "Time Interval (minutes)"
-  },
-  "optionPopupHeight": {
-    "message": "Popup Height (px)"
-  },
-  "optionsButtonSave": {
-    "message": "Speichern"
-  },
-  "optionsSaved": {
-    "message": "Saved successfully, badge will be refreshed now!"
-  }
 }
