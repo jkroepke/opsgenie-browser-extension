@@ -1,51 +1,56 @@
 {
-  "name": "__MSG_extName__",
-  "short_name": "Opsgenie Notifier",
-  "description": "__MSG_extDescription__",
-  "version": "2.0.2",
-  "manifest_version": 3,
-  "default_locale": "en",
-  "icons": {
-    "16": "/images/16x16.png",
-    "32": "/images/32x32.png",
-    "48": "/images/48x48.png",
-    "128": "/images/128x128.png"
-  },
-  "background": {
-    "scripts": [
-      "background.js"
-    ]
-  },
-  "action": {
-    "default_title": "__MSG_extName__",
-    "default_popup": "popup.html",
-    "default_icon": {
-      "16": "/images/16x16.png",
-      "32": "/images/32x32.png",
-      "48": "/images/48x48.png",
-      "128": "/images/128x128.png"
+    "name": "__MSG_extName__",
+    "short_name": "Opsgenie Notifier",
+    "description": "__MSG_extDescription__",
+    "homepage_url": "https://github.com/jkroepke/opsgenie-browser-extension",
+    "version": "2.0.2",
+    "manifest_version": 3,
+    "default_locale": "en",
+    "icons": {
+        "16": "/images/16x16.png",
+        "32": "/images/32x32.png",
+        "48": "/images/48x48.png",
+        "128": "/images/128x128.png"
+    },
+    "background": {
+        "scripts": [
+            "background.js"
+        ]
+    },
+    "action": {
+        "default_title": "__MSG_extName__",
+        "default_popup": "popup.html",
+        "default_icon": {
+            "16": "/images/16x16.png",
+            "32": "/images/32x32.png",
+            "48": "/images/48x48.png",
+            "128": "/images/128x128.png"
+        }
+    },
+    "content_security_policy": {
+        "extension_pages": "default-src 'none'; style-src 'self'; connect-src https://*.opsgenie.com; script-src 'self';"
+    },
+    "options_ui": {
+        "open_in_tab": false,
+        "page": "options.html"
+    },
+    "host_permissions": [
+        "https://*.opsgenie.com/"
+    ],
+    "permissions": [
+        "webRequest",
+        "storage",
+        "alarms",
+        "notifications"
+    ],
+    "developer": {
+        "name": "Jan-Otto Kröpke",
+        "url": "https://github.com/jkroepke"
+    },
+    "browser_specific_settings": {
+        "gecko": {
+            "id": "opsgenie-notifier@jkroepke.de",
+            "strict_min_version": "115.0"
+        }
     }
-  },
-  "content_security_policy": {
-    "extension_pages": "default-src 'none'; style-src 'self'; connect-src https://*.opsgenie.com; script-src 'self';"
-  },
-  "options_ui": {
-    "open_in_tab": false,
-    "page": "options.html"
-  },
-  "host_permissions": [
-    "https://*.opsgenie.com/"
-  ],
-  "permissions": [
-    "webRequest",
-    "storage",
-    "alarms",
-    "notifications"
-  ],
-  "browser_specific_settings": {
-    "gecko": {
-      "id": "opsgenie-notifier@jkroepke.de",
-      "strict_min_version": "115.0"
-    }
-  }
 }
