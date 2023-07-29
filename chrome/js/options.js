@@ -4,11 +4,17 @@ document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessag
 document.querySelector('label[for=region]').textContent = chrome.i18n.getMessage('optionsRegion');
 document.querySelector('label[for=customer-name]').textContent = chrome.i18n.getMessage('optionsCustomerName');
 document.querySelector('label[for=username]').textContent = chrome.i18n.getMessage('optionsUsername');
-document.querySelector('label[for=api-key]').innerHTML = chrome.i18n.getMessage('optionsApiKey', ['<a href="https://support.atlassian.com/opsgenie/docs/api-key-management/" target="_blank">', '</a>']);
+document.querySelector('label[for=api-key]').textContent = chrome.i18n.getMessage('optionsApiKey') + " ";
 document.querySelector('label[for=query]').textContent = chrome.i18n.getMessage('optionsAlertQuery');
 document.querySelector('label[for=time-interval]').textContent = chrome.i18n.getMessage('optionsTimeInterval');
 document.querySelector('label[for=popup-height]').textContent = chrome.i18n.getMessage('optionPopupHeight');
 document.querySelector('button').textContent = chrome.i18n.getMessage('optionsButtonSave');
+
+const helpApiKey = document.createElement('a')
+helpApiKey.setAttribute('href', "https://support.atlassian.com/opsgenie/docs/api-key-management/")
+helpApiKey.setAttribute('target', "_blank")
+helpApiKey.textContent = chrome.i18n.getMessage('optionsApiKeyHelp')
+document.querySelector('label[for=api-key]').appendChild(helpApiKey)
 
 document.addEventListener('DOMContentLoaded', async () => {
     const settings = await chrome.storage.sync.get({

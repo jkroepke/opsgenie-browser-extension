@@ -16,6 +16,18 @@ td {
     padding: 5px 3px;
 }
 
+a.right {
+    float: right;
+}
+
+p.warning {
+    color: #BF2600
+}
+
+p.center {
+    text-align:center
+}
+
 #info-text {
     padding: 10px;
 }
