@@ -121,6 +121,7 @@ async function renderAlerts() {
 
     popup.data.forEach(alert => {
         const tr = document.createElement("tr")
+        tr.setAttribute('id', alert.id)
         tr.classList.add('alert')
 
         const tdAlertAction = createAlertActionElement(alert, settings);
