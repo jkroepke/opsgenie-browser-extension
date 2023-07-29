@@ -4,7 +4,7 @@ chrome.storage.onChanged.addListener(async (changes, area) => {
     }
 });
 
-document.addEventListener('DOMContentLoaded', function () {
+document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('reload').addEventListener('click', (e) => {
         e.preventDefault()
 
@@ -45,7 +45,7 @@ async function renderAlerts() {
         return
     }
 
-    popup.data.forEach((alert, i) => {
+    popup.data.forEach(alert => {
         let alertRow = `<tr class="alert" id="${alert.id}"><td class="alert-action">`
         if (settings.username) {
             if (alert.acknowledged) {

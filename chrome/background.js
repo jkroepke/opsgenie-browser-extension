@@ -41,7 +41,11 @@ chrome.storage.onChanged.addListener((changes, area) => {
 
 chrome.alarms.onAlarm.addListener(alarm => {
     (async () => {
-        await doExecute(await chrome.storage.sync.get(defaultSettings));
+        switch (alarm.name) {
+            case 'fetch':
+                await doExecute(await chrome.storage.sync.get(defaultSettings));
+                break
+        }
     })();
 
     return true;
