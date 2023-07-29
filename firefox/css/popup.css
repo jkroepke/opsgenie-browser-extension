@@ -1,3 +1,7 @@
+:root {
+    color-scheme: light dark;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
     font-size: 0.75rem;
@@ -102,3 +106,15 @@ a#info-text {
 .P5-bg {
     background-color: #00875A;
 }
+
+@media (prefers-color-scheme: dark) {
+    body {
+        background-color: #232323;
+        color: #ccc;
+    }
+
+    .alert:hover td {
+        background-color: #333;
+    }
+}
+
