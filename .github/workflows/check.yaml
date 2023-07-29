@@ -14,3 +14,11 @@ jobs:
       - uses: actions/checkout@v3
       - run: make firefox
       - run: git diff --exit-code
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-node@v3
+        with:
+          node-version: 'lts/*'
+      - run: make lint

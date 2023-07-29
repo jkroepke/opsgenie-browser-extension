@@ -1,0 +1,22 @@
+{
+  "name": "opsgenie-browser-extension",
+  "version": "0.0.0",
+  "private": true,
+  "description": "An extension for showing latest alerts and getting notifications for new alert(s) via polling Opsgenie’s REST API.",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/jkroepke/opsgenie-browser-extension.git"
+  },
+  "scripts": {
+    "lint": "eslint chrome firefox"
+  },
+  "author": "Jan-Otto Kröpke <npm@jkroepke.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/jkroepke/opsgenie-browser-extension/issues"
+  },
+  "homepage": "https://github.com/jkroepke/opsgenie-browser-extension#readme",
+  "devDependencies": {
+    "eslint": "^8.46.0"
+  }
+}
