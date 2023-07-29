@@ -84,5 +84,23 @@
     },
     "optionsSaved": {
         "message": "Saved successfully, badge will be refreshed now!"
+    },
+    "popupAlertActionAck": {
+        "message": "[ACK]"
+    },
+    "popupAlertActioClose": {
+        "message": "[CLOSE]"
+    },
+    "popupLoading": {
+        "message": "Loading ..."
+    },
+    "popupLastUpdated": {
+        "message": "Last updated"
+    },
+    "popupSeeAllAlerts": {
+        "message": "see all alerts"
+    },
+    "popupNoAlerts": {
+        "message": "There are no alerts."
     }
 }

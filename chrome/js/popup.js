@@ -52,10 +52,10 @@ function createAlertActionElement(alert, settings) {
         let a
 
         if (alert.acknowledged) {
-            a = createElement('a', '[CLOSE]', 'handleAlert');
+            a = createElement('a', chrome.i18n.getMessage('popupAlertActionClose'), 'handleAlert');
             a.dataset.action = 'close'
         } else {
-            a = createElement('a', '[ACK]', 'handleAlert');
+            a = createElement('a', chrome.i18n.getMessage('popupAlertActionAck'), 'handleAlert');
             a.dataset.action = 'ack'
         }
 
@@ -98,7 +98,7 @@ async function renderAlerts() {
     elemAlerts.textContent = elemInfo.textContent = ''
 
     if (!popup) {
-        elemInfo.appendChild(createElement('p', 'Loading ...', 'warning'))
+        elemInfo.appendChild(createElement('p', chrome.i18n.getMessage('popupLoading'), 'warning'))
         return
     }
 
@@ -107,16 +107,16 @@ async function renderAlerts() {
         return
     }
 
-    const lastUpdate = createElement("i", `Last updated @ ${popup.time}`)
+    const lastUpdate = createElement("i", `${chrome.i18n.getMessage('popupLastUpdated')} @ ${popup.time}`)
     elemInfo.appendChild(lastUpdate)
 
-    const allAlertsLink = createElement("a", ` see all alerts↗`, 'right')
+    const allAlertsLink = createElement("a", ` ${chrome.i18n.getMessage('popupSeeAllAlerts')}↗`, 'right')
     allAlertsLink.setAttribute('href', popup.ogUrl)
     allAlertsLink.setAttribute('target', '_blank')
     elemInfo.appendChild(allAlertsLink)
 
     if (popup.data.length === 0) {
-        elemAlerts.appendChild(createElement("p", ' There are no alerts.  🎉', 'center'))
+        elemAlerts.appendChild(createElement("p", ` ${chrome.i18n.getMessage('popupNoAlerts')}  🎉`, 'center'))
     }
 
     popup.data.forEach(alert => {
