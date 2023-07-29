@@ -8,7 +8,8 @@ An extension for showing latest alerts and getting notifications for new alert(s
 
 **Get here:** 
 
-[![Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png "Get Opsgenie Alert Notifier")](https://chrome.google.com/webstore/detail/opsgenie-alert-notifier/eibhldckggocaibkflmkkacacijegkle)
+[![Chrome Web Store](docs/chrome.png "Get Opsgenie Alert Notifier for Chrome")](https://chrome.google.com/webstore/detail/ommahoeeleknjoipkbphjgcodpepapjl/)
+[![Mozilla Addon Store](docs/firefox.png "Get Opsgenie Alert Notifier for Firefox")](https://addons.mozilla.org/de/firefox/addon/opsgenie-notifier/)
 
 ### Manual Installation:
 
