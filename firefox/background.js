@@ -1,7 +1,4 @@
-const OPSGENIE_DOMAIN = {
-    "US": "opsgenie.com",
-    "EU": "eu.opsgenie.com",
-}
+import {OPSGENIE_DOMAIN, defaultSettings, opsgenieDomain} from './shared.js'
 
 const notificationPriorityMap = {
     "P1": 2,
@@ -9,16 +6,6 @@ const notificationPriorityMap = {
     "P3": 0,
     "P4": 0,
     "P5": 0,
-}
-
-const defaultSettings = {
-    enabled: true,
-    region: 'US',
-    customerName: '',
-    username: '',
-    apiKey: '',
-    query: '',
-    timeInterval: 1
 }
 
 initExtension();
@@ -53,22 +40,14 @@ chrome.alarms.onAlarm.addListener(alarm => {
 
 chrome.notifications.onClicked.addListener((notificationId) => {
     (async () => {
+        const settings = await chrome.storage.sync.get(defaultSettings)
         if (notificationId === 'opsgenie-alert-list') {
-            const settings = await chrome.storage.sync.get(defaultSettings)
-
-            let ogUrl = 'https://'
-            if (settings.customerName !== '') {
-                ogUrl += `${settings.customerName}.`
-            }
-
-            ogUrl += `app.${OPSGENIE_DOMAIN[settings.region]}/alert/list?query=${encodeURI(settings.query)}`
-
-            chrome.tabs.create({
-                url: ogUrl
+            await chrome.tabs.create({
+                url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
             });
         } else {
-            chrome.tabs.create({
-                url: 'https://opsg.in/a/i/' + notificationId
+            await chrome.tabs.create({
+                url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
             });
         }
     })();

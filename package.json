@@ -17,6 +17,7 @@
   },
   "homepage": "https://github.com/jkroepke/opsgenie-browser-extension#readme",
   "devDependencies": {
+    "@types/chrome": "^0.0.242",
     "eslint": "^8.46.0",
     "eslint-plugin-no-unsanitized": "^4.0.2"
   }

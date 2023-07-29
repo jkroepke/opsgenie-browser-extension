@@ -3,7 +3,7 @@
     "short_name": "Opsgenie Notifier",
     "description": "__MSG_extDescription__",
     "homepage_url": "https://github.com/jkroepke/opsgenie-browser-extension",
-    "version": "2.1.0",
+    "version": "2.2.0",
     "manifest_version": 3,
     "default_locale": "en",
     "icons": {
@@ -13,7 +13,8 @@
         "128": "/images/128x128.png"
     },
     "background": {
-        "service_worker": "background.js"
+        "service_worker": "background.js",
+        "type": "module"
     },
     "action": {
         "default_title": "__MSG_extName__",

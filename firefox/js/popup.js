@@ -1,3 +1,5 @@
+import {defaultSettings, opsgenieDomain} from '../shared.js'
+
 chrome.storage.onChanged.addListener(async (changes, area) => {
     if (area === 'session') {
         return renderAlerts()
@@ -79,13 +81,7 @@ function createAlertMessageElement(alert, settings) {
     tdAlertMessage.addEventListener('click', e => {
         e.preventDefault()
 
-        let url = "https://"
-        if (settings.customerName !== '') {
-            url += `${settings.customerName}.`
-        }
-        url += `app.opsgenie.com/alert/detail/${e.target.parentElement.id}/details`
-
-        window.open(url, '_blank')
+        window.open(`${opsgenieDomain(settings.customerName)}/alert/detail/${e.target.parentElement.id}/details`, '_blank')
     });
     return tdAlertMessage;
 }
@@ -93,7 +89,7 @@ function createAlertMessageElement(alert, settings) {
 async function renderAlerts() {
     const elemAlerts = document.getElementById("alerts")
     const elemInfo = document.getElementById("result")
-    const settings = await chrome.storage.sync.get()
+    const settings = await chrome.storage.sync.get(defaultSettings)
     const {popup} = await chrome.storage.session.get('popup')
     elemAlerts.textContent = elemInfo.textContent = ''
 
