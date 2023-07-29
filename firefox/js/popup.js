@@ -12,11 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         chrome.runtime.sendMessage({
             action: 'reload'
-        }, (error) => {
-            if (error) {
-                window.alert(error)
-            }
-        })
+        }).then(error => error && window.alert(error))
     });
 });
 
@@ -30,11 +26,7 @@ function sendMessage(e) {
     chrome.runtime.sendMessage({
         action: e.target.dataset.action,
         id: e.target.dataset.id,
-    }, (error) => {
-        if (error) {
-            window.alert(error)
-        }
-    })
+    }).then(error => error && window.alert(error))
 }
 
 function createElement(tagName, text, className) {
