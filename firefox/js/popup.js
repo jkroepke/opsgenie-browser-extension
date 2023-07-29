@@ -62,6 +62,7 @@ function createAlertActionElement(alert, settings) {
         }
 
         a.dataset.id = alert.id
+        a.setAttribute('href', '#')
         a.addEventListener('click', sendMessage);
         tdAlertAction.appendChild(a)
     }
