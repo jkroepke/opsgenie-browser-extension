@@ -1,12 +1,11 @@
-# Opsgenie Alert Notifier - Chrome Extension
-
+# Opsgenie Notifier
 An extension for showing latest alerts and getting notifications for new alert(s) via polling Opsgenie’s REST API.
 
 ## Installation
 
 **Get here:** 
 
-[![Chrome Web Store](images/ChromeWebStoreBadge.png "Get Opsgenie Alert Notifier")](https://chrome.google.com/webstore/detail/opsgenie-alert-notifier/eibhldckggocaibkflmkkacacijegkle)
+[![Chrome Web Store](https://storage.googleapis.com/web-dev-uploads/image/WlD8wC6g8khYWPJUsQceQkhXSlv1/iNEddTyWiMfLSwFD6qGq.png "Get Opsgenie Alert Notifier")](https://chrome.google.com/webstore/detail/opsgenie-alert-notifier/eibhldckggocaibkflmkkacacijegkle)
 
 ### Manual Installation:
 
@@ -20,7 +19,7 @@ An extension for showing latest alerts and getting notifications for new alert(s
 
 ### Configuration:
 * Select Opsgenie region: US or EU
-* Set API Key from your Opsgenie account which have READ access
+* Set API Key from your Opsgenie account which have READ access. The ACK/Close Actions requires Write Access. Read [OpsGenie help](https://support.atlassian.com/opsgenie/docs/api-key-management/) for more information.
 * Set Time Interval for polling Rest API, keep in mind your rates :)
 * [Optional] Put down your Alert Query if needed (About: https://docs.opsgenie.com/docs/alerts-search-query-help)
 
