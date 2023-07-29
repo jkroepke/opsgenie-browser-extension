@@ -1,6 +1,8 @@
 # Opsgenie Notifier
 An extension for showing latest alerts and getting notifications for new alert(s) via polling Opsgenie’s REST API.
 
+![](./docs/example.png)
+
 ## Installation
 
 **Get here:** 
