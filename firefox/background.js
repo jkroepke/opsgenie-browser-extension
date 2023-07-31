@@ -10,15 +10,15 @@ const notificationPriorityMap = {
 
 console.log("init");
 
-(async () => {
-    await initExtension();
-})();
-
 chrome.runtime.onInstalled.addListener(async details => {
     if (details.reason === 'install') {
         chrome.runtime.openOptionsPage()
     }
 
+    return initExtension();
+});
+
+chrome.runtime.onStartup.addListener(async () => {
     return initExtension();
 });
 
@@ -53,8 +53,6 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 async function initExtension() {
     if (chrome.notifications != null && !chrome.notifications.onClicked.hasListeners()) {
         chrome.notifications.onClicked.addListener(async notificationId => {
-            console.log("chrome.notifications")
-
             const settings = await chrome.storage.sync.get(defaultSettings)
             if (notificationId === 'opsgenie-alert-list') {
                 return chrome.tabs.create({
@@ -209,23 +207,24 @@ async function sendNotificationIfNewAlerts(data) {
         return alert
     })
 
-    if (latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate)) {
-        latestAlertDate = new Date(Math.max(...alerts.map(alert => alert.createdAt)));
-        await chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
+    let newAlerts = [];
+    if (!(latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate))) {
+        newAlerts = alerts.filter(alert => latestAlertDate < alert.createdAt)
+            .map(alert => {
+                return {
+                    id: alert.id,
+                    title: alert.message,
+                    message: `Priority: ${alert.priority}`,
+                    createdAt: alert.createdAt,
+                    priority: alert.priority
+                }
+            })
     }
 
-    const newAlerts = alerts.filter(alert => latestAlertDate < alert.createdAt)
-        .map(alert => {
-            return {
-                id: alert.id,
-                title: alert.message,
-                message: `Priority: ${alert.priority}`,
-                createdAt: alert.createdAt,
-                priority: alert.priority
-            }
-        })
+    latestAlertDate = new Date(Math.max(...alerts.map(alert => alert.createdAt)));
 
     if (newAlerts.length > 0) {
+        console.log(latestAlertDate, latestAlertDate.getTime())
         const setStorage = chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
 
         if (newAlerts.length === 1) {

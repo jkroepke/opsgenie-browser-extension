@@ -10,10 +10,6 @@ const notificationPriorityMap = {
 
 console.log("init");
 
-(async () => {
-    await initExtension();
-})();
-
 chrome.runtime.onInstalled.addListener(async details => {
     if (details.reason === 'install') {
         chrome.runtime.openOptionsPage()
@@ -22,17 +18,20 @@ chrome.runtime.onInstalled.addListener(async details => {
     return initExtension();
 });
 
+chrome.runtime.onStartup.addListener(async () => {
+    return initExtension();
+});
+
 chrome.storage.sync.onChanged.addListener(async () => {
     return initExtension();
 });
 
 chrome.alarms.onAlarm.addListener(async alarm => {
-        switch (alarm.name) {
-            case 'fetch':
-                return doExecute(await chrome.storage.sync.get(defaultSettings));
-        }
+    switch (alarm.name) {
+        case 'fetch':
+            return doExecute(await chrome.storage.sync.get(defaultSettings));
     }
-)
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message || !message.action) return;
@@ -49,12 +48,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
 });
 
-
 async function initExtension() {
     if (chrome.notifications != null && !chrome.notifications.onClicked.hasListeners()) {
         chrome.notifications.onClicked.addListener(async notificationId => {
-            console.log("chrome.notifications")
-
             const settings = await chrome.storage.sync.get(defaultSettings)
             if (notificationId === 'opsgenie-alert-list') {
                 return chrome.tabs.create({
@@ -211,7 +207,7 @@ async function sendNotificationIfNewAlerts(data) {
 
     let newAlerts = [];
     if (!(latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate))) {
-        newAlerts = alerts.filter(alert => latestAlertDate < alert.createdAt)
+        newAlerts = alerts
             .map(alert => {
                 return {
                     id: alert.id,
@@ -285,7 +281,7 @@ async function handleAlertAction(message, sendResponse) {
             })
         })
 
-        if (response.status !== 200) {
+        if (!response.ok || response.status !== 200) {
             try {
                 const responseText = await response.json()
                 sendResponse(`ERROR: ${responseText.message}`)
