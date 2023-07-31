@@ -26,3 +26,7 @@ firefox/firefox.zip:
 
 chrome/chrome.zip:
 	cd chrome && zip -q -r chrome.zip *
+
+.PHONY: safari
+safari: clean
+	xcrun safari-web-extension-converter --macos-only --bundle-identifier de.jkroepke.extension ./chrome
