@@ -19,37 +19,17 @@ chrome.runtime.onInstalled.addListener(async details => {
         chrome.runtime.openOptionsPage()
     }
 
-    await initExtension();
+    return initExtension();
 });
 
 chrome.storage.sync.onChanged.addListener(async () => {
-    if (chrome.notifications != null) {
-        chrome.notifications.onClicked.addListener((notificationId) => {
-            (async () => {
-                const settings = await chrome.storage.sync.get(defaultSettings)
-                if (notificationId === 'opsgenie-alert-list') {
-                    await chrome.tabs.create({
-                        url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
-                    });
-                } else {
-                    await chrome.tabs.create({
-                        url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
-                    });
-                }
-            })();
-
-            return true;
-        });
-    }
-
-    await initExtension();
+    return initExtension();
 });
 
 chrome.alarms.onAlarm.addListener(async alarm => {
-    switch (alarm.name) {
-        case 'fetch':
-            await doExecute(await chrome.storage.sync.get(defaultSettings));
-            break
+        switch (alarm.name) {
+            case 'fetch':
+                return doExecute(await chrome.storage.sync.get(defaultSettings));
         }
     }
 )
@@ -60,11 +40,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     (async () => {
         switch (message.action) {
             case 'reload':
-                await doExecute(await chrome.storage.sync.get(defaultSettings));
-                break
+                return doExecute(await chrome.storage.sync.get(defaultSettings));
             default:
-                await handleAlertAction(message, sendResponse);
-                break
+                return handleAlertAction(message, sendResponse);
         }
     })();
 
@@ -73,56 +51,85 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 
 
 async function initExtension() {
-    setBadge(-1)
-    await startExecution()
+    if (chrome.notifications != null && !chrome.notifications.onClicked.hasListeners()) {
+        chrome.notifications.onClicked.addListener(async notificationId => {
+            console.log("chrome.notifications")
+
+            const settings = await chrome.storage.sync.get(defaultSettings)
+            if (notificationId === 'opsgenie-alert-list') {
+                return chrome.tabs.create({
+                    url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+                });
+            } else {
+                return chrome.tabs.create({
+                    url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
+                });
+            }
+        });
+    }
+
+    return Promise.all([
+        setBadge(-1),
+        startExecution()
+    ])
 }
 
 async function startExecution() {
     const settings = await chrome.storage.sync.get(defaultSettings)
 
     if (!settings.enabled) {
-        setBadge(-1)
-        setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
-        return
+        return Promise.all([
+            setBadge(-1),
+            setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
+        ])
     }
 
     if (settings.apiKey === "") {
-        setBadge(-1)
-        setPopupData(false, settings, chrome.i18n.getMessage("popupApiKeyEmpty"))
-        return
+        return Promise.all([
+            setBadge(-1),
+            setPopupData(false, settings, chrome.i18n.getMessage("popupApiKeyEmpty"))
+        ])
     }
 
-    await chrome.alarms.clear('fetch')
-    await chrome.alarms.create('fetch', {
-        periodInMinutes: parseInt(settings.timeInterval) || 1
-    });
-
-    return doExecute(settings)
+    return Promise.all([
+        chrome.alarms.create('fetch', {
+            periodInMinutes: parseInt(settings.timeInterval) || 1
+        }),
+        doExecute(settings)
+    ])
 }
 
 async function doExecute(settings) {
     if (!settings.enabled) {
-        setBadge(-1)
-        setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
-        return
+        return Promise.all([
+            setBadge(-1),
+            setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
+        ])
     }
 
     let response;
 
     try {
         response = await fetch(`https://api.${OPSGENIE_DOMAIN[settings.region]}/v2/alerts?limit=100&sort=createdAt&query=${encodeURI(settings.query)}`, {
+            credentials: "omit",
+            cache: "no-store",
+            mode: "same-origin",
+            redirect: "error",
+            referrerPolicy: "no-referrer",
+
             headers: {
+                "Accept": "application/json",
                 "Authorization": `GenieKey ${settings.apiKey}`
             }
         })
     } catch (error) {
-        setBadge(-1)
-        setPopupData(false, settings, chrome.i18n.getMessage("popupNetworkFailure", [settings.timeInterval, error]))
-        return
+        return Promise.all([
+            setBadge(-1),
+            setPopupData(false, settings, chrome.i18n.getMessage("popupNetworkFailure", [settings.timeInterval, error]))
+        ])
     }
 
-    if (response.status !== 200) {
-        setBadge(-1)
+    if (!response.ok || response.status !== 200) {
         try {
             let errorMessage;
             try {
@@ -132,50 +139,61 @@ async function doExecute(settings) {
                 errorMessage = await response.text()
             }
 
-            setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, errorMessage]))
+            return Promise.all([
+                setBadge(-1),
+                setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, errorMessage]))
+            ])
         } catch (error) {
-            setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
+            return Promise.all([
+                setBadge(-1),
+                setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
+            ])
         }
-
-        return
     }
 
     try {
         const responseBody = await response.json()
-        setBadge(responseBody.data.length)
-        setPopupData(true, settings, responseBody.data)
+        const promises = []
+        promises.push(setBadge(responseBody.data.length))
+        promises.push(setPopupData(true, settings, responseBody.data))
+
         if (settings.enableNotifications) {
-            await sendNotificationIfNewAlerts(responseBody.data)
+            promises.push(sendNotificationIfNewAlerts(responseBody.data))
         }
+        return Promise.all(promises)
     } catch (error) {
-        setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
+        return setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
     }
 }
 
-function setBadge(count) {
+async function setBadge(count) {
     if (count > 0) {
         // red badge with alert count
-        chrome.action.setBadgeText({text: count.toString()})
-        chrome.action.setBadgeBackgroundColor({color: '#BF2600'})
-        chrome.action.setBadgeTextColor({color: '#EEEEEE'})
+        return Promise.all([
+            chrome.action.setBadgeText({text: count.toString()}),
+            chrome.action.setBadgeBackgroundColor({color: '#BF2600'}),
+            chrome.action.setBadgeTextColor({color: '#EEEEEE'})
+        ])
     } else if (count < 0) {
         // remove badge, no response alert api yet
-        chrome.action.setBadgeText({text: ''})
+        return chrome.action.setBadgeText({text: ''})
     } else {
-        chrome.action.setBadgeBackgroundColor({color: '#00875A'})
-        chrome.action.setBadgeText({text: ' '})
+        return Promise.all([
+            chrome.action.setBadgeBackgroundColor({color: '#00875A'}),
+            chrome.action.setBadgeText({text: ' '})
+        ])
     }
 }
 
-function setPopupData(ok, settings, data) {
-    const popup = {
-        ok: ok,
-        data: data,
-        time: new Date().toLocaleString(),
-        ogUrl: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
-    }
-
-    chrome.storage.session.set({popup})
+async function setPopupData(ok, settings, data) {
+    return chrome.storage.session.set({
+        popup: {
+            ok: ok,
+            data: data,
+            time: new Date().toLocaleString(),
+            ogUrl: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+        }
+    })
 }
 
 async function sendNotificationIfNewAlerts(data) {
@@ -193,7 +211,7 @@ async function sendNotificationIfNewAlerts(data) {
 
     if (latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate)) {
         latestAlertDate = new Date(Math.max(...alerts.map(alert => alert.createdAt)));
-        await chrome.storage.local.set({latestAlertDate: latestAlertDate.toISOString()})
+        await chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
     }
 
     const newAlerts = alerts.filter(alert => latestAlertDate < alert.createdAt)
@@ -208,27 +226,36 @@ async function sendNotificationIfNewAlerts(data) {
         })
 
     if (newAlerts.length > 0) {
-        await chrome.storage.local.set({latestAlertDate: latestAlertDate.toISOString()})
+        const setStorage = chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
 
         if (newAlerts.length === 1) {
-            return chrome.notifications.create(newAlerts[0].id, {
-                type: 'image',
-                title: newAlerts[0].title,
-                message: newAlerts[0].message,
-                iconUrl: 'images/128x128.png',
-                priority: notificationPriorityMap[newAlerts[0].priority] ?? 0,
-                silent: notificationPriorityMap[newAlerts[0].priority] === 0,
-                requireInteraction: notificationPriorityMap[newAlerts[0].priority] === 2,
-                eventTime: newAlerts[0].createdAt,
-            });
+            return Promise.all([
+                setStorage,
+                chrome.notifications.create(newAlerts[0].id, {
+                    type: 'basic',
+                    title: newAlerts[0].title,
+                    message: newAlerts[0].message,
+                    iconUrl: 'images/128x128.png',
+                    priority: notificationPriorityMap[newAlerts[0].priority] ?? 0,
+                    silent: notificationPriorityMap[newAlerts[0].priority] === 0,
+                    requireInteraction: notificationPriorityMap[newAlerts[0].priority] === 2,
+                    eventTime: newAlerts[0].createdAt.getTime(),
+                })
+            ])
         } else {
-            return chrome.notifications.create('opsgenie-alert-list', {
-                type: 'list',
-                iconUrl: 'images/128x128.png',
-                title: newAlerts.length.toString() + " new alerts!",
-                message: "",
-                items: newAlerts.map(alert => { return {title: alert.title, message: alert.message}}),
-            });
+            return Promise.all([
+                setStorage,
+                chrome.notifications.create('opsgenie-alert-list', {
+                    type: 'list',
+                    title: `${newAlerts.length.toString()} new alerts!`,
+                    iconUrl: 'images/128x128.png',
+                    message: "",
+                    items: newAlerts.map(alert => {
+                        return {title: alert.title, message: alert.message}
+                    }),
+                    eventTime: latestAlertDate.getTime()
+                })
+            ])
         }
     }
 }
@@ -238,9 +265,16 @@ async function handleAlertAction(message, sendResponse) {
     try {
         const settings = await chrome.storage.sync.get(defaultSettings)
         const response = await fetch(`https://api.${OPSGENIE_DOMAIN[settings.region]}/v2/alerts/${message.id}/${message.action}`, {
+            credentials: "omit",
+            cache: "no-store",
+            mode: "same-origin",
+            redirect: "error",
+            referrerPolicy: "no-referrer",
+
             method: "POST",
             headers: {
                 "Authorization": `GenieKey ${settings.apiKey}`,
+                'Accept': 'application/json',
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({

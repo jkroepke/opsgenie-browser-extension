@@ -48,7 +48,7 @@ function createAlertActionElement(alert, settings) {
             a.dataset.action = 'close'
         } else {
             a = createElement('a', chrome.i18n.getMessage('popupAlertActionAck'), 'handleAlert');
-            a.dataset.action = 'ack'
+            a.dataset.action = 'acknowledge'
         }
 
         a.dataset.id = alert.id
