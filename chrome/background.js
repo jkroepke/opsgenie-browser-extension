@@ -161,17 +161,11 @@ function setBadge(count) {
 }
 
 function setPopupData(ok, settings, data) {
-    let ogUrl = 'https://'
-    if (settings.customerName !== '') {
-        ogUrl += `${settings.customerName}.`
-    }
-    ogUrl += `app.opsgenie.com/alert/list?query=${encodeURI(settings.query)}`
-
     const popup = {
         ok: ok,
         data: data,
         time: new Date().toLocaleString(),
-        ogUrl: ogUrl
+        ogUrl: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
     }
 
     chrome.storage.session.set({popup})
