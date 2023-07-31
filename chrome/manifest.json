@@ -37,7 +37,6 @@
         "https://*.opsgenie.com/"
     ],
     "permissions": [
-        "webRequest",
         "storage",
         "alarms",
         "notifications"
