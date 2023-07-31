@@ -8,6 +8,7 @@ const notificationPriorityMap = {
     "P5": 0,
 }
 
+console.log("init")
 initExtension();
 
 chrome.runtime.onInstalled.addListener(details => {
@@ -182,7 +183,8 @@ function sendNotificationIfNewAlerts(data) {
     let {latestAlertDate} = chrome.storage.local.get('latestAlertDate')
 
     if (latestAlertDate === undefined) {
-        latestAlertDate = data.reduce((r, b) => Math.max(r, b.createdAt), Number.NEGATIVE_INFINITY);
+        latestAlertDate = new Date(Math.max.apply(null, data.map(date => new Date(date.createdAt))));
+        chrome.storage.local.set({latestAlertDate})
     }
 
     const newAlerts = data.filter(alert => latestAlertDate < alert.createdAt)
@@ -195,6 +197,8 @@ function sendNotificationIfNewAlerts(data) {
                 priority: alert.priority
             }
         })
+
+    console.log("c", latestAlertDate, data, newAlerts)
 
     if (newAlerts.length === 1) {
         chrome.notifications.create(newAlerts[0].id, {
@@ -224,7 +228,6 @@ function sendNotificationIfNewAlerts(data) {
 
     if (data.length > 0) {
         latestAlertDate = data.reduce((r, b) => Math.max(r, b.createdAt), Number.NEGATIVE_INFINITY);
-        chrome.storage.local.set({latestAlertDate: data[0].createdAt})
     }
 }
 
