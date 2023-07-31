@@ -148,7 +148,8 @@ function setBadge(count) {
     if (count > 0) {
         // red badge with alert count
         chrome.action.setBadgeText({text: count.toString()})
-        chrome.action.setBadgeBackgroundColor({color: '#DE350B'})
+        chrome.action.setBadgeBackgroundColor({color: '#BF2600'})
+        chrome.action.setBadgeTextColor({color: '#EEEEEE'})
     } else if (count < 0) {
         // remove badge, no response alert api yet
         chrome.action.setBadgeText({text: ''})
@@ -197,8 +198,6 @@ function sendNotificationIfNewAlerts(data) {
                 priority: alert.priority
             }
         })
-
-    console.log("c", latestAlertDate, data, newAlerts)
 
     if (newAlerts.length === 1) {
         chrome.notifications.create(newAlerts[0].id, {
