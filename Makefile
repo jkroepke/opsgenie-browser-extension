@@ -5,6 +5,9 @@ firefox:
 	@jq --indent 4 '. + {"developer": {"name": "Jan-Otto Kröpke", "url":"https://github.com/jkroepke"},"background": {"scripts": ["background.js"]},"browser_specific_settings": {"gecko": {"id": "opsgenie-notifier@jkroepke.de","strict_min_version": "115.0"}}}' chrome/manifest.json > firefox/manifest.json
 	@git add firefox
 
+.PHONY: all
+all: package lint
+
 node_modules:
 	npm install
 
