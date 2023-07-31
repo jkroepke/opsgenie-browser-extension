@@ -40,7 +40,9 @@
     ],
     "permissions": [
         "storage",
-        "alarms",
+        "alarms"
+    ],
+    "optional_permissions": [
         "notifications"
     ],
     "developer": {

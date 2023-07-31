@@ -1,8 +1,9 @@
-import {OPSGENIE_DOMAIN,defaultSettings} from '../shared.js'
+import {OPSGENIE_DOMAIN,defaultSettings} from './shared.js'
 
 document.querySelector('title').textContent = chrome.i18n.getMessage('optionsTitle');
 document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessage('optionsEnabled');
 document.querySelector('label[for=notifications]').textContent = chrome.i18n.getMessage('optionsNotificationsEnabled');
+document.querySelector('label[for=actions]').textContent = chrome.i18n.getMessage('optionsAlertActionsEnabled');
 document.querySelector('label[for=region]').textContent = chrome.i18n.getMessage('optionsRegion');
 document.querySelector('label[for=customer-name]').textContent = chrome.i18n.getMessage('optionsCustomerName');
 document.querySelector('label[for=username]').textContent = chrome.i18n.getMessage('optionsUsername');
@@ -22,6 +23,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const settings = await chrome.storage.sync.get(defaultSettings);
 
     document.getElementById('enabled').checked = settings.enabled
+    document.getElementById('notifications').checked = settings.enableNotifications
+    document.getElementById('actions').checked = settings.enableAlertActions
     document.getElementById('region').value = settings.region;
     document.getElementById('customer-name').value = settings.customerName;
     document.getElementById('api-key').value = settings.apiKey;
@@ -55,6 +58,7 @@ document.querySelector('form').addEventListener('submit', async e => {
         await chrome.storage.sync.set({
             enabled: document.getElementById('enabled').checked,
             enableNotifications: enableNotifications,
+            enableAlertActions: document.getElementById('actions').checked,
             region: document.getElementById('region').value,
             customerName: document.getElementById('customer-name').value,
             apiKey: document.getElementById('api-key').value,

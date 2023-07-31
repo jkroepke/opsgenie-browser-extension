@@ -22,6 +22,25 @@ chrome.runtime.onInstalled.addListener(details => {
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
+    if (chrome.notifications != null) {
+        chrome.notifications.onClicked.addListener((notificationId) => {
+            (async () => {
+                const settings = await chrome.storage.sync.get(defaultSettings)
+                if (notificationId === 'opsgenie-alert-list') {
+                    await chrome.tabs.create({
+                        url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+                    });
+                } else {
+                    await chrome.tabs.create({
+                        url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
+                    });
+                }
+            })();
+
+            return true;
+        });
+    }
+
     if (area === 'sync') {
         return initExtension();
     }
@@ -33,23 +52,6 @@ chrome.alarms.onAlarm.addListener(alarm => {
             case 'fetch':
                 await doExecute(await chrome.storage.sync.get(defaultSettings));
                 break
-        }
-    })();
-
-    return true;
-});
-
-chrome.notifications.onClicked.addListener((notificationId) => {
-    (async () => {
-        const settings = await chrome.storage.sync.get(defaultSettings)
-        if (notificationId === 'opsgenie-alert-list') {
-            await chrome.tabs.create({
-                url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
-            });
-        } else {
-            await chrome.tabs.create({
-                url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
-            });
         }
     })();
 
@@ -137,8 +139,9 @@ async function doExecute(settings) {
         const responseBody = await response.json()
         setBadge(responseBody.data.length)
         setPopupData(true, settings, responseBody.data)
-
-        await sendNotificationIfNewAlerts(responseBody.data)
+        if (settings.enableNotifications) {
+            await sendNotificationIfNewAlerts(responseBody.data)
+        }
     } catch (error) {
         setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
     }
@@ -160,17 +163,11 @@ function setBadge(count) {
 }
 
 function setPopupData(ok, settings, data) {
-    let ogUrl = 'https://'
-    if (settings.customerName !== '') {
-        ogUrl += `${settings.customerName}.`
-    }
-    ogUrl += `app.opsgenie.com/alert/list?query=${encodeURI(settings.query)}`
-
     const popup = {
         ok: ok,
         data: data,
         time: new Date().toLocaleString(),
-        ogUrl: ogUrl
+        ogUrl: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
     }
 
     chrome.storage.session.set({popup})
@@ -192,8 +189,6 @@ async function sendNotificationIfNewAlerts(data) {
     if (latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate)) {
         latestAlertDate = new Date(Math.max(...alerts.map(alert => alert.createdAt)));
         await chrome.storage.local.set({latestAlertDate: latestAlertDate.toISOString()})
-
-        console.log('a', latestAlertDate, alerts.map(alert => alert.createdAt), Math.max.apply(null, alerts.map(alert => alert.createdAt)), await chrome.storage.local.get('latestAlertDate'))
     }
 
     const newAlerts = alerts.filter(alert => latestAlertDate < alert.createdAt)
@@ -206,8 +201,6 @@ async function sendNotificationIfNewAlerts(data) {
                 priority: alert.priority
             }
         })
-
-    console.log('c', newAlerts, alerts, data)
 
     if (newAlerts.length > 0) {
         await chrome.storage.local.set({latestAlertDate: latestAlertDate.toISOString()})

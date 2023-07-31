@@ -55,6 +55,9 @@
     "optionsEnabled": {
         "message": "Enable Extension"
     },
+    "optionsNotificationsEnabled": {
+        "message": "Enable Notifications"
+    },
     "optionsRegion": {
         "message": "Region"
     },

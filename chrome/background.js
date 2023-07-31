@@ -1,4 +1,4 @@
-import {OPSGENIE_DOMAIN, defaultSettings, opsgenieDomain} from './shared.js'
+import {OPSGENIE_DOMAIN, defaultSettings, opsgenieDomain} from './js/shared.js'
 
 const notificationPriorityMap = {
     "P1": 2,
@@ -13,15 +13,32 @@ initExtension();
 
 chrome.runtime.onInstalled.addListener(details => {
     if (details.reason === 'install') {
-        chrome.tabs.create({
-            url: "options.html"
-        });
+        chrome.runtime.openOptionsPage()
     }
 
     return initExtension();
 });
 
 chrome.storage.onChanged.addListener((changes, area) => {
+    if (chrome.notifications != null) {
+        chrome.notifications.onClicked.addListener((notificationId) => {
+            (async () => {
+                const settings = await chrome.storage.sync.get(defaultSettings)
+                if (notificationId === 'opsgenie-alert-list') {
+                    await chrome.tabs.create({
+                        url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+                    });
+                } else {
+                    await chrome.tabs.create({
+                        url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
+                    });
+                }
+            })();
+
+            return true;
+        });
+    }
+
     if (area === 'sync') {
         return initExtension();
     }
@@ -33,23 +50,6 @@ chrome.alarms.onAlarm.addListener(alarm => {
             case 'fetch':
                 await doExecute(await chrome.storage.sync.get(defaultSettings));
                 break
-        }
-    })();
-
-    return true;
-});
-
-chrome.notifications.onClicked.addListener((notificationId) => {
-    (async () => {
-        const settings = await chrome.storage.sync.get(defaultSettings)
-        if (notificationId === 'opsgenie-alert-list') {
-            await chrome.tabs.create({
-                url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
-            });
-        } else {
-            await chrome.tabs.create({
-                url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
-            });
         }
     })();
 
@@ -88,13 +88,13 @@ async function startExecution() {
 
     if (!settings.enabled) {
         setBadge(-1)
-        setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled", [`<a href="options.html" target="_blank">`, "↗</a>"]))
+        setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
         return
     }
 
     if (settings.apiKey === "") {
         setBadge(-1)
-        setPopupData(false, settings, chrome.i18n.getMessage("popupApiKeyEmpty", [`<a href="options.html" target="_blank">`, "↗</a>"]))
+        setPopupData(false, settings, chrome.i18n.getMessage("popupApiKeyEmpty"))
         return
     }
 
@@ -107,6 +107,12 @@ async function startExecution() {
 }
 
 async function doExecute(settings) {
+    if (!settings.enabled) {
+        setBadge(-1)
+        setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
+        return
+    }
+
     let response;
 
     try {
@@ -124,8 +130,15 @@ async function doExecute(settings) {
     if (response.status !== 200) {
         setBadge(-1)
         try {
-            const responseBody = await response.text()
-            setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, responseBody]))
+            let errorMessage;
+            try {
+                const responseBody = await response.json()
+                errorMessage = responseBody.message
+            } catch (e) {
+                errorMessage = await response.text()
+            }
+
+            setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, errorMessage]))
         } catch (error) {
             setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
         }

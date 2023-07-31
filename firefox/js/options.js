@@ -1,7 +1,8 @@
-import {OPSGENIE_DOMAIN} from '../shared.js'
+import {OPSGENIE_DOMAIN,defaultSettings} from '../shared.js'
 
 document.querySelector('title').textContent = chrome.i18n.getMessage('optionsTitle');
 document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessage('optionsEnabled');
+document.querySelector('label[for=notifications]').textContent = chrome.i18n.getMessage('optionsNotificationsEnabled');
 document.querySelector('label[for=region]').textContent = chrome.i18n.getMessage('optionsRegion');
 document.querySelector('label[for=customer-name]').textContent = chrome.i18n.getMessage('optionsCustomerName');
 document.querySelector('label[for=username]').textContent = chrome.i18n.getMessage('optionsUsername');
@@ -18,16 +19,7 @@ helpApiKey.textContent = chrome.i18n.getMessage('optionsApiKeyHelp')
 document.querySelector('label[for=api-key]').appendChild(helpApiKey)
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const settings = await chrome.storage.sync.get({
-        enabled: true,
-        region: 'US',
-        customerName: '',
-        apiKey: '',
-        username: '',
-        timeInterval: 1,
-        query: '',
-        popupHeight: 300,
-    });
+    const settings = await chrome.storage.sync.get(defaultSettings);
 
     document.getElementById('enabled').checked = settings.enabled
     document.getElementById('region').value = settings.region;
@@ -44,19 +36,25 @@ document.querySelector('form').addEventListener('submit', async e => {
     e.preventDefault()
 
     const formAlert = document.getElementById('form-alert')
+    const enableNotifications = document.getElementById('notifications').checked
 
     formAlert.value = ""
 
     try {
+        let permissionGrantedNotifications = true
         const permissionGrantedOrigins = await chrome.permissions.request({
             origins: [`https://api.${OPSGENIE_DOMAIN[document.getElementById('region').value]}/v2/*`]
         })
-        const permissionGrantedNotifications = await chrome.permissions.request({
-            permissions: ['notifications'],
-        })
+
+        if (enableNotifications) {
+            permissionGrantedNotifications = await chrome.permissions.request({
+                permissions: ['notifications'],
+            })
+        }
 
         await chrome.storage.sync.set({
             enabled: document.getElementById('enabled').checked,
+            enableNotifications: enableNotifications,
             region: document.getElementById('region').value,
             customerName: document.getElementById('customer-name').value,
             apiKey: document.getElementById('api-key').value,
