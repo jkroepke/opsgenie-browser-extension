@@ -1,3 +1,5 @@
+import {OPSGENIE_DOMAIN} from '../shared.js'
+
 document.querySelector('title').textContent = chrome.i18n.getMessage('optionsTitle');
 document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessage('optionsEnabled');
 document.querySelector('label[for=region]').textContent = chrome.i18n.getMessage('optionsRegion');
@@ -41,18 +43,31 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.querySelector('form').addEventListener('submit', async e => {
     e.preventDefault()
 
-    document.getElementById('form-alert').value = ""
+    const formAlert = document.getElementById('form-alert')
 
-    await chrome.storage.sync.set({
-        enabled: document.getElementById('enabled').checked,
-        region: document.getElementById('region').value,
-        customerName: document.getElementById('customer-name').value,
-        apiKey: document.getElementById('api-key').value,
-        username: document.getElementById('username').value,
-        query: document.getElementById('query').value,
-        timeInterval: parseInt(document.getElementById('time-interval').value) || 1,
-        popupHeight: parseInt(document.getElementById('popup-height').value) || 300,
-    })
+    formAlert.value = ""
 
-    document.getElementById('form-alert').textContent = chrome.i18n.getMessage('optionsSaved');
+    try {
+        const permissionGrantedOrigins = await chrome.permissions.request({
+            origins: [`https://api.${OPSGENIE_DOMAIN[document.getElementById('region').value]}/v2/*`]
+        })
+        const permissionGrantedNotifications = await chrome.permissions.request({
+            permissions: ['notifications'],
+        })
+
+        await chrome.storage.sync.set({
+            enabled: document.getElementById('enabled').checked,
+            region: document.getElementById('region').value,
+            customerName: document.getElementById('customer-name').value,
+            apiKey: document.getElementById('api-key').value,
+            username: document.getElementById('username').value,
+            query: document.getElementById('query').value,
+            timeInterval: parseInt(document.getElementById('time-interval').value) || 1,
+            popupHeight: parseInt(document.getElementById('popup-height').value) || 300,
+        })
+
+        formAlert.textContent = permissionGrantedOrigins && permissionGrantedNotifications ? chrome.i18n.getMessage('optionsSaved') : chrome.i18n.getMessage('optionsPermissionDenied');
+    } catch (error) {
+        formAlert.textContent = error;
+    }
 });

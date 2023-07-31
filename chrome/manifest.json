@@ -3,7 +3,7 @@
     "short_name": "Opsgenie Notifier",
     "description": "__MSG_extDescription__",
     "homepage_url": "https://github.com/jkroepke/opsgenie-browser-extension",
-    "version": "2.3.1",
+    "version": "2.4.0",
     "manifest_version": 3,
     "default_locale": "en",
     "icons": {
@@ -34,12 +34,14 @@
         "page": "options.html"
     },
     "host_permissions": [
-        "https://api.opsgenie.com/v2/alerts",
-        "https://api.eu.opsgenie.com/v2/alerts"
+        "https://api.opsgenie.com/*",
+        "https://api.eu.opsgenie.com/*"
     ],
     "permissions": [
         "storage",
-        "alarms",
+        "alarms"
+    ],
+    "optional_permissions": [
         "notifications"
     ]
 }

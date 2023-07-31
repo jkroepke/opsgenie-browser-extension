@@ -5,12 +5,14 @@ export const OPSGENIE_DOMAIN = {
 
 export const defaultSettings = {
     enabled: true,
+    enableNotifications: true,
     region: 'US',
     customerName: '',
     username: '',
     apiKey: '',
     query: '',
-    timeInterval: 1
+    timeInterval: 1,
+    popupHeight: 300
 }
 
 export function opsgenieDomain(customerName) {

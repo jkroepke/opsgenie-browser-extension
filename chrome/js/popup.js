@@ -92,7 +92,10 @@ async function renderAlerts() {
     }
 
     if (!popup.ok) {
-        elemInfo.appendChild(createElement('p', popup.data, 'warning'))
+        popup.data.split('\n')
+            .map(m => createElement('p', m, 'warning'))
+            .forEach(e => elemInfo.appendChild(e))
+
         return
     }
 

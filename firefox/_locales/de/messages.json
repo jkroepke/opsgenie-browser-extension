@@ -28,7 +28,7 @@
         }
     },
     "popupClientFailure": {
-        "message": "Client failure, will retry $TIMEINTERVAL$ minutes.<br> Reason: $ERROR$",
+        "message": "Client failure, will retry $TIMEINTERVAL$ minutes.\nReason: $ERROR$",
         "placeholders": {
             "timeinterval": {
                 "content": "$1"
@@ -39,7 +39,7 @@
         }
     },
     "popupNetworkFailure": {
-        "message": "Network failure, will retry in $TIMEINTERVAL$ minutes.<br> Reason: $ERROR$",
+        "message": "Network failure, will retry in $TIMEINTERVAL$ minutes.\nReason: $ERROR$",
         "placeholders": {
             "timeinterval": {
                 "content": "$1"
@@ -84,6 +84,9 @@
     },
     "optionsSaved": {
         "message": "Saved successfully, badge will be refreshed now!"
+    },
+    "optionsPermissionDenied": {
+        "message": "Please grant permission to extension for receive alerts and using notifications."
     },
     "popupAlertActionAck": {
         "message": "[ACK]"

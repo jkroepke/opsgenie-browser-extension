@@ -1,5 +1,8 @@
+import {OPSGENIE_DOMAIN,defaultSettings} from '../shared.js'
+
 document.querySelector('title').textContent = chrome.i18n.getMessage('optionsTitle');
 document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessage('optionsEnabled');
+document.querySelector('label[for=notifications]').textContent = chrome.i18n.getMessage('optionsNotificationsEnabled');
 document.querySelector('label[for=region]').textContent = chrome.i18n.getMessage('optionsRegion');
 document.querySelector('label[for=customer-name]').textContent = chrome.i18n.getMessage('optionsCustomerName');
 document.querySelector('label[for=username]').textContent = chrome.i18n.getMessage('optionsUsername');
@@ -16,16 +19,7 @@ helpApiKey.textContent = chrome.i18n.getMessage('optionsApiKeyHelp')
 document.querySelector('label[for=api-key]').appendChild(helpApiKey)
 
 document.addEventListener('DOMContentLoaded', async () => {
-    const settings = await chrome.storage.sync.get({
-        enabled: true,
-        region: 'US',
-        customerName: '',
-        apiKey: '',
-        username: '',
-        timeInterval: 1,
-        query: '',
-        popupHeight: 300,
-    });
+    const settings = await chrome.storage.sync.get(defaultSettings);
 
     document.getElementById('enabled').checked = settings.enabled
     document.getElementById('region').value = settings.region;
@@ -41,18 +35,37 @@ document.addEventListener('DOMContentLoaded', async () => {
 document.querySelector('form').addEventListener('submit', async e => {
     e.preventDefault()
 
-    document.getElementById('form-alert').value = ""
+    const formAlert = document.getElementById('form-alert')
+    const enableNotifications = document.getElementById('notifications').checked
 
-    await chrome.storage.sync.set({
-        enabled: document.getElementById('enabled').checked,
-        region: document.getElementById('region').value,
-        customerName: document.getElementById('customer-name').value,
-        apiKey: document.getElementById('api-key').value,
-        username: document.getElementById('username').value,
-        query: document.getElementById('query').value,
-        timeInterval: parseInt(document.getElementById('time-interval').value) || 1,
-        popupHeight: parseInt(document.getElementById('popup-height').value) || 300,
-    })
+    formAlert.value = ""
 
-    document.getElementById('form-alert').textContent = chrome.i18n.getMessage('optionsSaved');
+    try {
+        let permissionGrantedNotifications = true
+        const permissionGrantedOrigins = await chrome.permissions.request({
+            origins: [`https://api.${OPSGENIE_DOMAIN[document.getElementById('region').value]}/v2/*`]
+        })
+
+        if (enableNotifications) {
+            permissionGrantedNotifications = await chrome.permissions.request({
+                permissions: ['notifications'],
+            })
+        }
+
+        await chrome.storage.sync.set({
+            enabled: document.getElementById('enabled').checked,
+            enableNotifications: enableNotifications,
+            region: document.getElementById('region').value,
+            customerName: document.getElementById('customer-name').value,
+            apiKey: document.getElementById('api-key').value,
+            username: document.getElementById('username').value,
+            query: document.getElementById('query').value,
+            timeInterval: parseInt(document.getElementById('time-interval').value) || 1,
+            popupHeight: parseInt(document.getElementById('popup-height').value) || 300,
+        })
+
+        formAlert.textContent = permissionGrantedOrigins && permissionGrantedNotifications ? chrome.i18n.getMessage('optionsSaved') : chrome.i18n.getMessage('optionsPermissionDenied');
+    } catch (error) {
+        formAlert.textContent = error;
+    }
 });

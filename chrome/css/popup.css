@@ -26,6 +26,13 @@ a.right {
     float: right;
 }
 
+p {
+    margin: 0;
+}
+p {
+    white-space: break-spaces;
+}
+
 p.warning {
     color: #BF2600
 }
