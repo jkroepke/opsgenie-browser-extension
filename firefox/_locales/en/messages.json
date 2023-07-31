@@ -6,26 +6,10 @@
         "message": "An extension for showing latest alerts and getting notifications for new alert(s) via polling Opsgenie’s REST API."
     },
     "popupExtensionDisabled": {
-        "message": "Extension is disabled, for enabling it use switch in $LINKSTART$option page$LINKEND$.",
-        "placeholders": {
-            "linkstart": {
-                "content": "$1"
-            },
-            "linkend": {
-                "content": "$2"
-            }
-        }
+        "message": "Extension is disabled, for enabling it use switch in extensions setting page."
     },
     "popupApiKeyEmpty": {
-        "message": "Extension is not configured, please configure your extension in $LINKSTART$option page$LINKEND$.",
-        "placeholders": {
-            "linkstart": {
-                "content": "$1"
-            },
-            "linkend": {
-                "content": "$2"
-            }
-        }
+        "message": "API Key is missing. Please enter a valid API key on the extensions setting page."
     },
     "popupClientFailure": {
         "message": "Client failure, will retry $TIMEINTERVAL$ minutes.\nReason: $ERROR$",
@@ -57,6 +41,9 @@
     },
     "optionsNotificationsEnabled": {
         "message": "Enable Notifications"
+    },
+    "optionsAlertActionsEnabled": {
+        "message": "Enable alert actions"
     },
     "optionsRegion": {
         "message": "Region"

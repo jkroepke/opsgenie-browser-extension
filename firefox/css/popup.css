@@ -9,6 +9,7 @@ body {
     text-overflow: ellipsis;
     white-space: nowrap;
     max-width: 600px;
+    min-width: 300px;
     max-height: 300px;
     margin: 0;
     padding: 0;
@@ -29,11 +30,9 @@ a.right {
 p {
     margin: 0;
 }
-p {
-    white-space: break-spaces;
-}
 
 p.warning {
+    white-space: normal;
     color: #BF2600
 }
 
@@ -89,7 +88,7 @@ a#info-text {
     padding-left: 5px;
 }
 
-.alert-message:hover, a:hover {
+.alert-message:hover, a:hover, p.warning:hover {
     text-decoration: none;
     cursor: pointer;
 }

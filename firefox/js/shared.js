@@ -6,6 +6,7 @@ export const OPSGENIE_DOMAIN = {
 export const defaultSettings = {
     enabled: false,
     enableNotifications: false,
+    enableAlertActions: true,
     region: 'US',
     customerName: '',
     username: '',

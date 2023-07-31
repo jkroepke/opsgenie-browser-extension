@@ -1,4 +1,4 @@
-import {defaultSettings, opsgenieDomain} from '../shared.js'
+import {defaultSettings, opsgenieDomain} from './shared.js'
 
 chrome.storage.onChanged.addListener(async (changes, area) => {
     if (area === 'session') {
@@ -88,6 +88,12 @@ async function renderAlerts() {
 
     if (!popup) {
         elemInfo.appendChild(createElement('p', chrome.i18n.getMessage('popupLoading'), 'warning'))
+
+        document.querySelectorAll('.warning').forEach(e => e.addEventListener('click', (e) => {
+            e.preventDefault()
+            chrome.runtime.openOptionsPage()
+        }))
+
         return
     }
 
@@ -95,6 +101,12 @@ async function renderAlerts() {
         popup.data.split('\n')
             .map(m => createElement('p', m, 'warning'))
             .forEach(e => elemInfo.appendChild(e))
+
+
+        document.querySelectorAll('.warning').forEach(e => e.addEventListener('click', (e) => {
+            e.preventDefault()
+            chrome.runtime.openOptionsPage()
+        }))
 
         return
     }
@@ -116,8 +128,10 @@ async function renderAlerts() {
         tr.setAttribute('id', alert.id)
         tr.classList.add('alert')
 
-        const tdAlertAction = createAlertActionElement(alert, settings);
-        tr.appendChild(tdAlertAction);
+        if (settings.enableAlertActions) {
+            const tdAlertAction = createAlertActionElement(alert, settings);
+            tr.appendChild(tdAlertAction);
+        }
 
         const tdAlertCount = createElement("td", `x${alert.count}`, 'alert-count')
         tr.appendChild(tdAlertCount);
