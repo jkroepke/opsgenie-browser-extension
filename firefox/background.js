@@ -8,18 +8,21 @@ const notificationPriorityMap = {
     "P5": 0,
 }
 
-console.log("init")
-initExtension();
+console.log("init");
 
-chrome.runtime.onInstalled.addListener(details => {
+(async () => {
+    await initExtension();
+})();
+
+chrome.runtime.onInstalled.addListener(async details => {
     if (details.reason === 'install') {
         chrome.runtime.openOptionsPage()
     }
 
-    return initExtension();
+    await initExtension();
 });
 
-chrome.storage.onChanged.addListener((changes, area) => {
+chrome.storage.sync.onChanged.addListener(async () => {
     if (chrome.notifications != null) {
         chrome.notifications.onClicked.addListener((notificationId) => {
             (async () => {
@@ -39,22 +42,17 @@ chrome.storage.onChanged.addListener((changes, area) => {
         });
     }
 
-    if (area === 'sync') {
-        return initExtension();
-    }
+    await initExtension();
 });
 
-chrome.alarms.onAlarm.addListener(alarm => {
-    (async () => {
-        switch (alarm.name) {
-            case 'fetch':
-                await doExecute(await chrome.storage.sync.get(defaultSettings));
-                break
+chrome.alarms.onAlarm.addListener(async alarm => {
+    switch (alarm.name) {
+        case 'fetch':
+            await doExecute(await chrome.storage.sync.get(defaultSettings));
+            break
         }
-    })();
-
-    return true;
-});
+    }
+)
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message || !message.action) return;
@@ -74,13 +72,9 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 });
 
 
-function initExtension() {
-    (async () => {
-        setBadge(-1)
-        await startExecution()
-    })();
-
-    return true;
+async function initExtension() {
+    setBadge(-1)
+    await startExecution()
 }
 
 async function startExecution() {

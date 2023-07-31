@@ -1,13 +1,15 @@
 import {defaultSettings, opsgenieDomain} from './shared.js'
 
-chrome.storage.onChanged.addListener(async (changes, area) => {
-    if (area === 'session') {
-        return renderAlerts()
-    }
+(async () => {
+    await renderAlerts()
+})()
+
+chrome.storage.session.onChanged.addListener(async () => {
+    await renderAlerts()
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('reload').addEventListener('click', (e) => {
+    document.getElementById('reload').addEventListener('click', e => {
         e.preventDefault()
 
         chrome.runtime.sendMessage({
@@ -15,10 +17,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }).then(error => error && window.alert(error))
     });
 });
-
-(async () => {
-    await renderAlerts()
-})()
 
 function sendMessage(e) {
     e.preventDefault();
