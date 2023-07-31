@@ -34,7 +34,8 @@
         "page": "options.html"
     },
     "host_permissions": [
-        "https://*.opsgenie.com/"
+        "https://api.opsgenie.com/v2/alerts",
+        "https://api.eu.opsgenie.com/v2/alerts"
     ],
     "permissions": [
         "storage",
