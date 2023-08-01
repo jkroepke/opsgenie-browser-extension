@@ -46,6 +46,7 @@ form > button:hover {
 
 form > #form-alert {
     grid-column: controls;
+    text-align: center;
 }
 
 @media (prefers-color-scheme: dark) {

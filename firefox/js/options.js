@@ -1,4 +1,4 @@
-import {OPSGENIE_DOMAIN,defaultSettings} from './shared.js'
+import {OPSGENIE_DOMAIN, defaultSettings} from './shared.js'
 
 document.querySelector('title').textContent = chrome.i18n.getMessage('optionsTitle');
 document.querySelector('label[for=enabled]').textContent = chrome.i18n.getMessage('optionsEnabled');
@@ -51,6 +51,10 @@ document.querySelector('form').addEventListener('submit', async e => {
 
         if (enableNotifications) {
             permissionGrantedNotifications = await chrome.permissions.request({
+                permissions: ['notifications'],
+            })
+        } else {
+            await chrome.permissions.remove({
                 permissions: ['notifications'],
             })
         }

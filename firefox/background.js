@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     return initExtension();
 });
 
-chrome.runtime.onStartup.addListener(async () => {
+chrome.runtime.chrome.runtime.onStartup.addListener(async () => {
     return initExtension();
 });
 
@@ -27,12 +27,11 @@ chrome.storage.sync.onChanged.addListener(async () => {
 });
 
 chrome.alarms.onAlarm.addListener(async alarm => {
-        switch (alarm.name) {
-            case 'fetch':
-                return doExecute(await chrome.storage.sync.get(defaultSettings));
-        }
+    switch (alarm.name) {
+        case 'fetch':
+            return doExecute(await chrome.storage.sync.get(defaultSettings));
     }
-)
+});
 
 chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     if (!message || !message.action) return;
@@ -49,6 +48,16 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
     return true;
 });
 
+
+if (chrome.permissions.onRemoved) {
+    chrome.permissions.onRemoved.addListener(async permissions => {
+        if (permissions.permissions.includes('notifications')) {
+            return await chrome.storage.sync.set({
+                enableNotifications: false
+            })
+        }
+    })
+}
 
 async function initExtension() {
     if (chrome.notifications != null && !chrome.notifications.onClicked.hasListeners()) {
@@ -72,21 +81,22 @@ async function initExtension() {
     ])
 }
 
+function setPopupError(settings, message, placeholders) {
+    return Promise.all([
+        setBadge(-1),
+        setPopupData(false, settings, chrome.i18n.getMessage(message, placeholders))
+    ])
+}
+
 async function startExecution() {
     const settings = await chrome.storage.sync.get(defaultSettings)
 
     if (!settings.enabled) {
-        return Promise.all([
-            setBadge(-1),
-            setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
-        ])
+        return setPopupError(settings, "popupExtensionDisabled");
     }
 
     if (settings.apiKey === "") {
-        return Promise.all([
-            setBadge(-1),
-            setPopupData(false, settings, chrome.i18n.getMessage("popupApiKeyEmpty"))
-        ])
+        return setPopupError(settings, "popupApiKeyEmpty")
     }
 
     return Promise.all([
@@ -99,10 +109,7 @@ async function startExecution() {
 
 async function doExecute(settings) {
     if (!settings.enabled) {
-        return Promise.all([
-            setBadge(-1),
-            setPopupData(false, settings, chrome.i18n.getMessage("popupExtensionDisabled"))
-        ])
+        return setPopupError("popupExtensionDisabled")
     }
 
     let response;
@@ -111,7 +118,6 @@ async function doExecute(settings) {
         response = await fetch(`https://api.${OPSGENIE_DOMAIN[settings.region]}/v2/alerts?limit=100&sort=createdAt&query=${encodeURI(settings.query)}`, {
             credentials: "omit",
             cache: "no-store",
-            mode: "same-origin",
             redirect: "error",
             referrerPolicy: "no-referrer",
 
@@ -121,10 +127,7 @@ async function doExecute(settings) {
             }
         })
     } catch (error) {
-        return Promise.all([
-            setBadge(-1),
-            setPopupData(false, settings, chrome.i18n.getMessage("popupNetworkFailure", [settings.timeInterval, error]))
-        ])
+        return setPopupError(settings, "popupNetworkFailure", [settings.timeInterval, error])
     }
 
     if (!response.ok || response.status !== 200) {
@@ -137,15 +140,9 @@ async function doExecute(settings) {
                 errorMessage = await response.text()
             }
 
-            return Promise.all([
-                setBadge(-1),
-                setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, errorMessage]))
-            ])
+            return setPopupError(settings, "popupClientFailure", [settings.timeInterval, errorMessage])
         } catch (error) {
-            return Promise.all([
-                setBadge(-1),
-                setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
-            ])
+            return setPopupError(settings, "popupClientFailure", [settings.timeInterval, error])
         }
     }
 
@@ -160,7 +157,7 @@ async function doExecute(settings) {
         }
         return Promise.all(promises)
     } catch (error) {
-        return setPopupData(false, settings, chrome.i18n.getMessage("popupClientFailure", [settings.timeInterval, error]))
+        return setPopupError("popupClientFailure", [settings.timeInterval, error])
     }
 }
 
@@ -209,7 +206,7 @@ async function sendNotificationIfNewAlerts(data) {
 
     let newAlerts = [];
     if (!(latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate))) {
-        newAlerts = alerts.filter(alert => latestAlertDate < alert.createdAt)
+        newAlerts = alerts
             .map(alert => {
                 return {
                     id: alert.id,
@@ -224,7 +221,6 @@ async function sendNotificationIfNewAlerts(data) {
     latestAlertDate = new Date(Math.max(...alerts.map(alert => alert.createdAt)));
 
     if (newAlerts.length > 0) {
-        console.log(latestAlertDate, latestAlertDate.getTime())
         const setStorage = chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
 
         if (newAlerts.length === 1) {
@@ -266,7 +262,6 @@ async function handleAlertAction(message, sendResponse) {
         const response = await fetch(`https://api.${OPSGENIE_DOMAIN[settings.region]}/v2/alerts/${message.id}/${message.action}`, {
             credentials: "omit",
             cache: "no-store",
-            mode: "same-origin",
             redirect: "error",
             referrerPolicy: "no-referrer",
 
@@ -283,7 +278,7 @@ async function handleAlertAction(message, sendResponse) {
             })
         })
 
-        if (response.status !== 200) {
+        if (!response.ok || response.status !== 200) {
             try {
                 const responseText = await response.json()
                 sendResponse(`ERROR: ${responseText.message}`)
