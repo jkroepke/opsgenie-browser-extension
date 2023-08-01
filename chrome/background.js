@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     return initExtension();
 });
 
-chrome.runtime.chrome.runtime.onStartup.addListener(async () => {
+chrome.runtime.onStartup.addListener(async () => {
     return initExtension();
 });
 
