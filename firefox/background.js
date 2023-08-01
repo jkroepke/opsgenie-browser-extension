@@ -18,7 +18,7 @@ chrome.runtime.onInstalled.addListener(async details => {
     return initExtension();
 });
 
-chrome.runtime.chrome.runtime.onStartup.addListener(async () => {
+chrome.runtime.onStartup.addListener(async () => {
     return initExtension();
 });
 
@@ -52,33 +52,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 if (chrome.permissions.onRemoved) {
     chrome.permissions.onRemoved.addListener(async permissions => {
         if (permissions.permissions.includes('notifications')) {
-            return await chrome.storage.sync.set({
+            chrome.notifications.onClicked.removeListener(notificationListener);
+
+            return chrome.storage.sync.set({
                 enableNotifications: false
             })
         }
     })
 }
 
-async function initExtension() {
-    if (chrome.notifications != null && !chrome.notifications.onClicked.hasListeners()) {
-        chrome.notifications.onClicked.addListener(async notificationId => {
-            const settings = await chrome.storage.sync.get(defaultSettings)
-            if (notificationId === 'opsgenie-alert-list') {
-                return chrome.tabs.create({
-                    url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
-                });
-            } else {
-                return chrome.tabs.create({
-                    url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
-                });
-            }
+async function notificationListener(notificationId) {
+    const settings = await chrome.storage.sync.get(defaultSettings)
+    if (notificationId === 'opsgenie-alert-list') {
+        return chrome.tabs.create({
+            url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+        });
+    } else {
+        return chrome.tabs.create({
+            url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
         });
     }
+}
 
-    return Promise.all([
-        setBadge(-1),
-        startExecution()
-    ])
+async function initExtension() {
+    if (chrome.notifications != null && !chrome.notifications.onClicked.hasListener(notificationListener)) {
+        chrome.notifications.onClicked.addListener(notificationListener);
+    }
+
+    return startExecution()
 }
 
 function setPopupError(settings, message, placeholders) {

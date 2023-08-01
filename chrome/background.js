@@ -52,33 +52,34 @@ chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
 if (chrome.permissions.onRemoved) {
     chrome.permissions.onRemoved.addListener(async permissions => {
         if (permissions.permissions.includes('notifications')) {
-            return await chrome.storage.sync.set({
+            chrome.notifications.onClicked.removeListener(notificationListener);
+
+            return chrome.storage.sync.set({
                 enableNotifications: false
             })
         }
     })
 }
 
-async function initExtension() {
-    if (chrome.notifications != null && !chrome.notifications.onClicked.hasListeners()) {
-        chrome.notifications.onClicked.addListener(async notificationId => {
-            const settings = await chrome.storage.sync.get(defaultSettings)
-            if (notificationId === 'opsgenie-alert-list') {
-                return chrome.tabs.create({
-                    url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
-                });
-            } else {
-                return chrome.tabs.create({
-                    url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
-                });
-            }
+async function notificationListener(notificationId) {
+    const settings = await chrome.storage.sync.get(defaultSettings)
+    if (notificationId === 'opsgenie-alert-list') {
+        return chrome.tabs.create({
+            url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+        });
+    } else {
+        return chrome.tabs.create({
+            url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
         });
     }
+}
 
-    return Promise.all([
-        setBadge(-1),
-        startExecution()
-    ])
+async function initExtension() {
+    if (chrome.notifications != null && !chrome.notifications.onClicked.hasListener(notificationListener)) {
+        chrome.notifications.onClicked.addListener(notificationListener);
+    }
+
+    return startExecution()
 }
 
 function setPopupError(settings, message, placeholders) {
@@ -207,6 +208,7 @@ async function sendNotificationIfNewAlerts(data) {
     let newAlerts = [];
     if (!(latestAlertDate === undefined || !(latestAlertDate instanceof Date) || isNaN(latestAlertDate))) {
         newAlerts = alerts
+            .filter(alert => latestAlertDate < alert.createdAt)
             .map(alert => {
                 return {
                     id: alert.id,
@@ -221,36 +223,30 @@ async function sendNotificationIfNewAlerts(data) {
     latestAlertDate = new Date(Math.max(...alerts.map(alert => alert.createdAt)));
 
     if (newAlerts.length > 0) {
-        const setStorage = chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
+        await chrome.storage.local.set({latestAlertDate: latestAlertDate.getTime()})
 
         if (newAlerts.length === 1) {
-            return Promise.all([
-                setStorage,
-                chrome.notifications.create(newAlerts[0].id, {
-                    type: 'basic',
-                    title: newAlerts[0].title,
-                    message: newAlerts[0].message,
-                    iconUrl: 'images/128x128.png',
-                    priority: notificationPriorityMap[newAlerts[0].priority] ?? 0,
-                    silent: notificationPriorityMap[newAlerts[0].priority] === 0,
-                    requireInteraction: notificationPriorityMap[newAlerts[0].priority] === 2,
-                    eventTime: newAlerts[0].createdAt.getTime(),
-                })
-            ])
+            return chrome.notifications.create(newAlerts[0].id, {
+                type: 'basic',
+                title: newAlerts[0].title,
+                message: newAlerts[0].message,
+                iconUrl: 'images/128x128.png',
+                priority: notificationPriorityMap[newAlerts[0].priority] ?? 0,
+                silent: notificationPriorityMap[newAlerts[0].priority] === 0,
+                requireInteraction: notificationPriorityMap[newAlerts[0].priority] === 2,
+                eventTime: newAlerts[0].createdAt.getTime(),
+            })
         } else {
-            return Promise.all([
-                setStorage,
-                chrome.notifications.create('opsgenie-alert-list', {
-                    type: 'list',
-                    title: `${newAlerts.length.toString()} new alerts!`,
-                    iconUrl: 'images/128x128.png',
-                    message: "",
-                    items: newAlerts.map(alert => {
-                        return {title: alert.title, message: alert.message}
-                    }),
-                    eventTime: latestAlertDate.getTime()
-                })
-            ])
+            return chrome.notifications.create('opsgenie-alert-list', {
+                type: 'list',
+                title: `${newAlerts.length.toString()} new alerts!`,
+                iconUrl: 'images/128x128.png',
+                message: "",
+                items: newAlerts.map(alert => {
+                    return {title: alert.title, message: alert.message}
+                }),
+                eventTime: latestAlertDate.getTime()
+            })
         }
     }
 }

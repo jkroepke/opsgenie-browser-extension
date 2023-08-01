@@ -34,6 +34,20 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.getElementById('popup-height').value = parseInt(settings.popupHeight)
 });
 
+document.getElementById('notifications').addEventListener('click', async e => {
+    e.preventDefault()
+
+    if (e.target.checked) {
+        e.target.checked = await chrome.permissions.request({
+            permissions: ['notifications'],
+        })
+    } else {
+        await chrome.permissions.remove({
+            permissions: ['notifications'],
+        })
+        e.target.checked = false
+    }
+})
 
 document.querySelector('form').addEventListener('submit', async e => {
     e.preventDefault()
@@ -44,20 +58,9 @@ document.querySelector('form').addEventListener('submit', async e => {
     formAlert.value = ""
 
     try {
-        let permissionGrantedNotifications = true
-        const permissionGrantedOrigins = await chrome.permissions.request({
+        const permissionGranted = await chrome.permissions.request({
             origins: [`https://api.${OPSGENIE_DOMAIN[document.getElementById('region').value]}/v2/*`]
         })
-
-        if (enableNotifications) {
-            permissionGrantedNotifications = await chrome.permissions.request({
-                permissions: ['notifications'],
-            })
-        } else {
-            await chrome.permissions.remove({
-                permissions: ['notifications'],
-            })
-        }
 
         await chrome.storage.sync.set({
             enabled: document.getElementById('enabled').checked,
@@ -72,7 +75,7 @@ document.querySelector('form').addEventListener('submit', async e => {
             popupHeight: parseInt(document.getElementById('popup-height').value) || 300,
         })
 
-        formAlert.textContent = permissionGrantedOrigins && permissionGrantedNotifications ? chrome.i18n.getMessage('optionsSaved') : chrome.i18n.getMessage('optionsPermissionDenied');
+        formAlert.textContent = permissionGranted ? chrome.i18n.getMessage('optionsSaved') : chrome.i18n.getMessage('optionsPermissionDenied');
     } catch (error) {
         formAlert.textContent = error;
     }
