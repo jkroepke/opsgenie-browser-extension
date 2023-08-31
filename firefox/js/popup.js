@@ -72,7 +72,7 @@ function createAlertMessageElement(alert, settings) {
     tdAlertMessage.addEventListener('click', e => {
         e.preventDefault()
 
-        window.open(`${opsgenieDomain(settings.customerName)}/alert/detail/${e.target.parentElement.id}/details`, '_blank')
+        window.open(`${opsgenieDomain(settings.customerName, settings.region)}/alert/detail/${e.target.parentElement.id}/details`, '_blank')
     });
     return tdAlertMessage;
 }

@@ -65,11 +65,11 @@ async function notificationListener(notificationId) {
     const settings = await chrome.storage.sync.get(defaultSettings)
     if (notificationId === 'opsgenie-alert-list') {
         return chrome.tabs.create({
-            url: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+            url: `${opsgenieDomain(settings.customerName, settings.region)}/alert/list?query=${encodeURI(settings.query)}`
         });
     } else {
         return chrome.tabs.create({
-            url: `${opsgenieDomain(settings.customerName)}/alert/detail/${notificationId}/details`
+            url: `${opsgenieDomain(settings.customerName, settings.region)}/alert/detail/${notificationId}/details`
         });
     }
 }
@@ -187,7 +187,7 @@ async function setPopupData(ok, settings, data) {
             ok: ok,
             data: data,
             time: new Date().toLocaleString(),
-            ogUrl: `${opsgenieDomain(settings.customerName)}/alert/list?query=${encodeURI(settings.query)}`
+            ogUrl: `${opsgenieDomain(settings.customerName, settings.region)}/alert/list?query=${encodeURI(settings.query)}`
         }
     })
 }
